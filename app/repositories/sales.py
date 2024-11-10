@@ -1,10 +1,13 @@
+import pandas as pd
+
 from fastapi import HTTPException
-from sqlalchemy import delete
+
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
-from sqlalchemy.dialects.postgresql import insert
 
 from app.models.sales import SalesModel
-from app.schemas.sales import SaleCreate
+
+__all__ = ['SalesRepo']
 
 
 class SalesRepo:
@@ -12,27 +15,39 @@ class SalesRepo:
 
     def __init__(self, session: Session):
         self.session = session
+        self.engine = session.bind
 
-    def insert_sales(self, sales_data: list[SaleCreate]):
-        """Insert a list of sales records into the database, ignoring duplicates."""
+    def get_existing_transaction_ids(self, transaction_ids: list) -> set:
+        """Retrieve existing transaction IDs from the database."""
+        stmt = select(SalesModel.transaction_id).where(
+            SalesModel.transaction_id.in_(transaction_ids))
+        result = self.session.execute(stmt)
+        return {row[0] for row in result.fetchall()}
+
+    def bulk_insert(self, df: pd.DataFrame) -> int:
+        """Insert a DataFrame into the database using Pandas."""
         try:
-            inserted_count = 0
-            for sale in sales_data:
-                stmt = (
-                    insert(SalesModel)
-                    .values(**sale.model_dump())
-                    .on_conflict_do_nothing(index_elements=['transaction_id'])
-                    .returning(SalesModel.transaction_id)
-                )
-                result = self.session.execute(stmt)
+            required_columns = [
+                'transaction_id', 'transaction_date', 'customer_id', 'channel',
+                'product_id', 'product_name', 'category', 'quantity', 'unit_price',
+                'discount_amount', 'total_amount', 'payment_method', 'order_status',
+                'shipping_fee', 'tax_amount', 'total_paid', 'store_location', 'salesperson_id'
+            ]
+            df = df[required_columns]
 
-                inserted_count += len(result.fetchall())
+            existing_ids = self.get_existing_transaction_ids(
+                df['transaction_id'].tolist())
 
-            self.session.commit()
-            return inserted_count
+            df = df[~df['transaction_id'].isin(existing_ids)]
+
+            if not df.empty:
+                df.to_sql('sales', con=self.engine, if_exists='append',
+                          index=False, method='multi', chunksize=10000)
+
+            return len(df)
         except Exception as e:
-            self.session.rollback()
-            raise Exception(f"Database error: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Error during bulk insert: {str(e)}")
 
     def clear(self):
         """Delete all records from the sales table."""
