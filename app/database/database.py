@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import load_dotenv
 
-__all__ = ["get_db", "engine", "Base"]
+__all__ = ["get_db", "engine", "Base", "SessionLocal"]
 
 # Load environment variables from .env file (for local development)
 load_dotenv()

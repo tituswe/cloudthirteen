@@ -8,13 +8,13 @@ services:
     environment:
       POSTGRES_USER: clouduser
       POSTGRES_PASSWORD: cloudpass
-      POSTGRES_DB: cloudthirteen_db
+      POSTGRES_DB: db
     ports:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U clouduser -d cloudthirteen_db']
+      test: ['CMD-SHELL', 'pg_isready -U clouduser -d db']
       interval: 10s
       timeout: 5s
       retries: 5
