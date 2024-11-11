@@ -49,6 +49,18 @@ class SalesRepo:
             raise HTTPException(
                 status_code=500, detail=f"Error during bulk insert: {str(e)}")
 
+    def fetch(self, start_date: str = None, end_date: str = None) -> pd.DataFrame:
+        """Fetch records from the sales table within the optional date range."""
+        try:
+            query = (self.session.query(SalesModel)
+                     .filter(start_date is None or SalesModel.transaction_date >= start_date)
+                     .filter(end_date is None or SalesModel.transaction_date <= end_date))
+
+            return pd.read_sql(query.statement, query.session.bind)
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, detail=f"Error during fetch: {str(e)}")
+
     def clear(self):
         """Delete all records from the sales table."""
         try:

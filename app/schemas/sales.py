@@ -31,6 +31,5 @@ class SaleCreate(SaleBase):
 
 
 class Sale(SaleBase):
-
     class Config:
         from_attributes = True

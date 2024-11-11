@@ -1,3 +1,4 @@
+from typing import List
 import pandas as pd
 
 from io import StringIO
@@ -5,6 +6,8 @@ from fastapi import HTTPException, UploadFile
 
 from app.database.database import SessionLocal
 from app.repositories.sales import SalesRepo
+from app.schemas.data import RevenueData
+from app.services.utils import SvcUtils
 
 
 class SalesSvc:
@@ -38,3 +41,31 @@ class SalesSvc:
 
         insert_count = self.repo.bulk_insert(df)
         return insert_count
+
+    def get_revenue_data(self, start_date: str = None, end_date: str = None, interval: str = None, is_cumulative: bool = True) -> List[RevenueData]:
+        """Retrieve total revenue chart data."""
+        df = self.repo.fetch(start_date, end_date)
+        df['transaction_date'] = pd.to_datetime(df['transaction_date'])
+
+        if not interval:
+            interval = SvcUtils.get_interval_col(start_date, end_date)
+
+        df['interval'] = df['transaction_date'].dt.to_period(
+            interval).dt.to_timestamp()
+
+        revenue_data = (df
+                        .groupby('interval')['total_paid']
+                        .sum()
+                        .reset_index()
+                        .rename(columns={'interval': 'date', 'total_paid': 'revenue'}))
+
+        revenue_data['change'] = revenue_data['revenue'].pct_change() * 100
+        revenue_data['change'] = revenue_data['change'].fillna(0)
+
+        if is_cumulative:
+            revenue_data['cum_revenue'] = revenue_data['revenue'].cumsum()
+            revenue_data['cum_change'] = revenue_data['change'].cumsum()
+
+        revenue_data['date'] = revenue_data['date'].astype(str)
+
+        return revenue_data.to_dict(orient='records')
