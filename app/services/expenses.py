@@ -1,23 +1,19 @@
-from typing import List
-import pandas as pd
-
 from io import StringIO
 from fastapi import HTTPException, UploadFile
-
+import pandas as pd
 from app.database.database import SessionLocal
-from app.repositories.sales import SalesRepo
-from app.schemas.data import RevenueData
+from app.repositories.expenses import ExpensesRepo
 from app.services.utils import SvcUtils
 
-__all__ = ['SalesSvc']
+__all__ = ['ExpensesSvc']
 
 
-class SalesSvc:
-    """Service for processing sales data and interacting with the database."""
+class ExpensesSvc:
+    """Service for processing expenses data and interacting with the database."""
 
     def __init__(self):
         session = SessionLocal()
-        self.repo = SalesRepo(session)
+        self.repo = ExpensesRepo(session)
 
     def parse_csv(self, contents: str) -> pd.DataFrame:
         """Parse CSV contents into a Pandas DataFrame."""
@@ -44,8 +40,8 @@ class SalesSvc:
         insert_count = self.repo.bulk_insert(df)
         return insert_count
 
-    def get_revenue_data(self, start_date: str = None, end_date: str = None, interval: str = None) -> List[RevenueData]:
-        """Retrieve total revenue chart data."""
+    def get_expense_data(self, start_date: str = None, end_date: str = None, interval: str = None) -> pd.DataFrame:
+        """Retrieve expenses data within the optional date range."""
         df = self.repo.fetch(start_date, end_date)
         df['transaction_date'] = pd.to_datetime(df['transaction_date'])
 
@@ -56,19 +52,19 @@ class SalesSvc:
                           .dt.to_period(interval)
                           .dt.to_timestamp())
 
-        revenue_data = (df
+        expense_data = (df
                         .groupby('interval')['total_paid']
                         .sum()
                         .reset_index()
-                        .rename(columns={'interval': 'date', 'total_paid': 'revenue'}))
+                        .rename(columns={'interval': 'date', 'total_paid': 'expense'}))
 
-        revenue_data['change'] = (revenue_data['revenue'].pct_change()
+        expense_data['change'] = (expense_data['expense'].pct_change()
                                   * 100).fillna(0)
 
-        revenue_data['cum_revenue'] = revenue_data['revenue'].cumsum()
-        revenue_data['cum_change'] = (revenue_data['cum_revenue'].pct_change()
+        expense_data['cum_expense'] = expense_data['expense'].cumsum()
+        expense_data['cum_change'] = (expense_data['cum_expense'].pct_change()
                                       * 100).fillna(0)
 
-        revenue_data['date'] = revenue_data['date'].astype(str)
+        expense_data['date'] = expense_data['date'].astype(str)
 
-        return revenue_data.to_dict(orient='records')
+        return expense_data.to_dict(orient='records')

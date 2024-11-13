@@ -1,5 +1,5 @@
 from decimal import Decimal
-from sqlalchemy import TIMESTAMP, Column, DateTime, Float, Integer, String
+from sqlalchemy import Column, DateTime, Float, Integer, String
 
 from app.database.database import Base
 
@@ -29,4 +29,4 @@ class SalesModel(Base):
     salesperson_id = Column(String, nullable=True)
 
     def __repr__(self):
-        return f"<Sale(transaction_id='{self.transaction_id}', total_paid={self.total_paid})>"
+        return f"<SalesModel(transaction_id='{self.transaction_id}', category-{self.category}, total_paid={self.total_paid})>"

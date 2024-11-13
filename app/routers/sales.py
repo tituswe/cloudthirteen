@@ -9,8 +9,12 @@ __all__ = ["router"]
 router = APIRouter(prefix="/sales")
 
 
-@router.post("/upload", description="Upload Sales Data from CSV", response_model=None)
-async def upload_sales_csv(file: UploadFile = File(...), overwrite: bool = Query(False), sales_svc: SalesSvc = Depends()):
+@router.post("/upload",
+             description="Upload Sales Data from CSV",
+             response_model=None)
+async def upload_sales_csv(file: UploadFile = File(...),
+                           overwrite: bool = Query(False),
+                           sales_svc: SalesSvc = Depends()):
     try:
         record_count = await sales_svc.process_and_insert_csv(file, overwrite)
     except HTTPException as e:
@@ -23,11 +27,16 @@ async def upload_sales_csv(file: UploadFile = File(...), overwrite: bool = Query
     return {"message": f"Successfully inserted {record_count} records"}
 
 
-@router.get("/revenue", description="Calculate Total Revenue", response_model=List[RevenueData])
-def get_revenue_data(start_date: str = None, end_date: str = None, interval: str = None, is_cumulative: bool = True, sales_svc: SalesSvc = Depends()):
+@router.get("/revenue",
+            description="Calculate Total Revenue",
+            response_model=List[RevenueData])
+def get_revenue_data(start_date: str = None,
+                     end_date: str = None,
+                     interval: str = None,
+                     sales_svc: SalesSvc = Depends()):
     try:
         revenue_data = sales_svc.get_revenue_data(
-            start_date, end_date, interval, is_cumulative)
+            start_date, end_date, interval)
     except HTTPException as e:
         raise e
     except Exception as e:
