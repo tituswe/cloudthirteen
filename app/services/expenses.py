@@ -39,32 +39,3 @@ class ExpensesSvc:
 
         insert_count = self.repo.bulk_insert(df)
         return insert_count
-
-    def get_expense_data(self, start_date: str = None, end_date: str = None, interval: str = None) -> pd.DataFrame:
-        """Retrieve expenses data within the optional date range."""
-        df = self.repo.fetch(start_date, end_date)
-        df['transaction_date'] = pd.to_datetime(df['transaction_date'])
-
-        if not interval:
-            interval = SvcUtils.get_interval_col(start_date, end_date)
-
-        df['interval'] = (df['transaction_date']
-                          .dt.to_period(interval)
-                          .dt.to_timestamp())
-
-        expense_data = (df
-                        .groupby('interval')['total_paid']
-                        .sum()
-                        .reset_index()
-                        .rename(columns={'interval': 'date', 'total_paid': 'expense'}))
-
-        expense_data['change'] = (expense_data['expense'].pct_change()
-                                  * 100).fillna(0)
-
-        expense_data['cum_expense'] = expense_data['expense'].cumsum()
-        expense_data['cum_change'] = (expense_data['cum_expense'].pct_change()
-                                      * 100).fillna(0)
-
-        expense_data['date'] = expense_data['date'].astype(str)
-
-        return expense_data.to_dict(orient='records')

@@ -5,6 +5,7 @@ from app.database.database import Base, engine
 from app.routers.health import router as health_router
 from app.routers.sales import router as sales_router
 from app.routers.expenses import router as expenses_router
+from app.routers.balance_sheet import router as balance_sheet_router
 
 app = FastAPI()
 
@@ -29,3 +30,4 @@ app.add_middleware(
 app.include_router(health_router)
 app.include_router(sales_router)
 app.include_router(expenses_router)
+app.include_router(balance_sheet_router)

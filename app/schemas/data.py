@@ -1,6 +1,14 @@
 from pydantic import BaseModel
 
-__all__ = ["RevenueData", "ExpeditureData"]
+__all__ = ["BalanceSheetData", "RevenueData", "ExpeditureData"]
+
+
+class BalanceSheetData(BaseModel):
+    date: str
+    revenue: float
+    expense: float
+    margin: float
+    cum_margin: float
 
 
 class RevenueData(BaseModel):
