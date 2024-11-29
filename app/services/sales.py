@@ -6,7 +6,7 @@ from fastapi import HTTPException, UploadFile
 
 from app.database.database import SessionLocal
 from app.repositories.sales import SalesRepo
-from app.schemas.data import RevenueData
+from app.schemas.data import RevenueData, SalesByProductData
 from app.services.utils import SvcUtils
 
 __all__ = ['SalesSvc']
@@ -42,4 +42,11 @@ class SalesSvc:
             self.repo.clear()
 
         insert_count = self.repo.bulk_insert(df)
+
+        self.close()
+
         return insert_count
+
+    def close(self):
+        """Close the database session."""
+        self.repo.close()

@@ -5,7 +5,7 @@ import pandas as pd
 from app.database.database import SessionLocal
 from app.repositories.expenses import ExpensesRepo
 from app.repositories.sales import SalesRepo
-from app.schemas.data import BalanceSheetData, RevenueData
+from app.schemas.data import BalanceSheetData, RevenueData, ExpenditureData
 from app.services.utils import SvcUtils
 
 __all__ = ['BalanceSheetSvc']
@@ -58,6 +58,13 @@ class BalanceSheetSvc:
         overview_df['cum_margin'] = overview_df['margin'].cumsum()
         overview_df['date'] = overview_df['date'].astype(str)
 
+        overview_df['revenue'] = overview_df['revenue'].round(2)
+        overview_df['expense'] = overview_df['expense'].round(2)
+        overview_df['margin'] = overview_df['margin'].round(2)
+        overview_df['cum_margin'] = overview_df['cum_margin'].round(2)
+
+        self.close()
+
         return overview_df.to_dict(orient='records')
 
     def get_revenue_data(self, start_date: str = None, end_date: str = None, interval: str = None) -> List[RevenueData]:
@@ -87,9 +94,16 @@ class BalanceSheetSvc:
 
         df['date'] = df['date'].astype(str)
 
+        df['revenue'] = df['revenue'].round(2)
+        df['cum_revenue'] = df['cum_revenue'].round(2)
+        df['change'] = df['change'].round(1)
+        df['cum_change'] = df['cum_change'].round(1)
+
+        self.close()
+
         return df.to_dict(orient='records')
 
-    def get_expense_data(self, start_date: str = None, end_date: str = None, interval: str = None) -> pd.DataFrame:
+    def get_expense_data(self, start_date: str = None, end_date: str = None, interval: str = None) -> List[ExpenditureData]:
         """Retrieve expenses data within the optional date range."""
         if not interval:
             interval = SvcUtils.get_interval_col(start_date, end_date)
@@ -115,6 +129,13 @@ class BalanceSheetSvc:
                             * 100).fillna(0)
 
         df['date'] = df['date'].astype(str)
+
+        df['expense'] = df['expense'].round(2)
+        df['cum_expense'] = df['cum_expense'].round(2)
+        df['change'] = df['change'].round(1)
+        df['cum_change'] = df['cum_change'].round(1)
+
+        self.close()
 
         return df.to_dict(orient='records')
 

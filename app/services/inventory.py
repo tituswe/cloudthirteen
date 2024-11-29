@@ -4,17 +4,15 @@ from io import StringIO
 from fastapi import HTTPException, UploadFile
 
 from app.database.database import SessionLocal
-from app.repositories.expenses import ExpensesRepo
-
-__all__ = ['ExpensesSvc']
+from app.repositories.inventory import InventoryRepo
 
 
-class ExpensesSvc:
-    """Service for processing expenses data and interacting with the database."""
+class InventorySvc:
+    """Service for processing inventory data and interacting with the database."""
 
     def __init__(self):
         session = SessionLocal()
-        self.repo = ExpensesRepo(session)
+        self.repo = InventoryRepo(session)
 
     def parse_csv(self, contents: str) -> pd.DataFrame:
         """Parse CSV contents into a Pandas DataFrame."""
