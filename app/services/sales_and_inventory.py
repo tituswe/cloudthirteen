@@ -78,9 +78,12 @@ class SalesAndInventorySvc:
 
         df = (df
               .groupby(['interval', 'product_name', 'cost_price'])[['inventory_level', 'replenishment']]
-              .sum()
+              .agg({
+                  'inventory_level': 'last',
+                  'replenishment': 'sum'
+              })
               .reset_index()
-              .rename(columns={'interval': 'date'}))
+              .rename(columns={'interval': 'date', 'inventory_level': 'inventory'}))
 
         df['date'] = df['date'].astype(str)
 
@@ -88,6 +91,12 @@ class SalesAndInventorySvc:
 
         df = df.drop(['cost_price'], axis=1)
         df['expenditure'] = df['expenditure'].round(2)
+
+        df = (df
+              .pivot(index='date', columns='product_name', values=['inventory', 'replenishment', 'expenditure'])
+              .reset_index())
+        df.columns = df.columns.map(
+            lambda x: f"{x[0]}{':' if x[1] != '' else ''}{x[1]}")
 
         self.close()
 

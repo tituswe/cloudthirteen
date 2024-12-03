@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from typing import Dict, Union
+from pydantic import BaseModel, RootModel
 
 __all__ = ["BalanceSheetData", "RevenueData",
            "ExpenditureData", "SalesByProductData", "SalesByChannelData", "InventoryExpenditureData", "ProductReturnsData"]
@@ -43,10 +44,7 @@ class SalesByChannelData(BaseModel):
 
 class InventoryExpenditureData(BaseModel):
     date: str
-    product_name: str
-    inventory_level: int
-    replenishment: int
-    expenditure: float
+    # arbitrary number of inventory items
 
 
 class ProductReturnsData(BaseModel):
