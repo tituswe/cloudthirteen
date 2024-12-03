@@ -10,5 +10,8 @@ venv/
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 
+# Docker Compose
+compose.yaml
+
 # Miscellaneous
 NOTES.md

@@ -14,6 +14,7 @@ COPY . .
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
+ENV DATABASE_URL=postgresql+psycopg2://clouduser:cloudpass@db:5432/db
 
 # Expose port 8000
 EXPOSE 8000
