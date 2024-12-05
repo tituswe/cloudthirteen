@@ -1,7 +1,7 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
-from app.schemas.data import InventoryExpenditureData, ProductReturnsData, SalesByChannelData, SalesByProductData
+from app.schemas.data import ProductReturnsData, SalesByChannelData, SalesByProductData
 from app.services.sales_and_inventory import SalesAndInventorySvc
 
 __all__ = ["router"]

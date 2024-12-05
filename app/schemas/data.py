@@ -1,8 +1,7 @@
-from typing import Dict, Union
-from pydantic import BaseModel, RootModel
+from pydantic import BaseModel
 
 __all__ = ["BalanceSheetData", "RevenueData",
-           "ExpenditureData", "SalesByProductData", "SalesByChannelData", "InventoryExpenditureData", "ProductReturnsData"]
+           "ExpenditureData", "CustomerAcquisitionData", "CustomersByAgeData", "CustomersByChannelData", "SalesByProductData", "SalesByChannelData", "InventoryExpenditureData", "ProductReturnsData"]
 
 
 class BalanceSheetData(BaseModel):
@@ -27,6 +26,25 @@ class ExpenditureData(BaseModel):
     change: float
     cum_expense: float
     cum_change: float
+
+
+class CustomerAcquisitionData(BaseModel):
+    date: str
+    customers: int
+    cum_customers: int
+
+
+class CustomersByAgeData(BaseModel):
+    age: str
+    age_label: str
+    customers: int
+    pct_customers: float
+
+
+class CustomersByChannelData(BaseModel):
+    channel: str
+    customers: int
+    pct_customers: float
 
 
 class SalesByProductData(BaseModel):
